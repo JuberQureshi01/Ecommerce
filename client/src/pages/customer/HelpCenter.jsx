@@ -136,7 +136,7 @@ const HelpCenter = () => {
       {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b border-border pb-3 overflow-x-auto">
         <button onClick={() => { setTab('tickets'); setSelected(null); }} className={`text-sm px-4 py-2 min-h-[36px] whitespace-nowrap ${tab === 'tickets' ? 'text-primary border-b-2 border-primary font-medium' : 'text-gray-500'}`}>My Tickets</button>
-        <button onClick={() => { setTab('create'); setShowCreate(true); }} className={`text-sm px-4 py-2 min-h-[36px] whitespace-nowrap ${tab === 'create' ? 'text-primary border-b-2 border-primary font-medium' : 'text-gray-500'}`}>Create Ticket</button>
+        <button onClick={() => { setTab('tickets'); setSelected(null); setShowCreate(true); }} className={`text-sm px-4 py-2 min-h-[36px] whitespace-nowrap ${showCreate ? 'text-primary border-b-2 border-primary font-medium' : 'text-gray-500'}`}>Create Ticket</button>
         <button onClick={() => setTab('faq')} className={`text-sm px-4 py-2 min-h-[36px] whitespace-nowrap ${tab === 'faq' ? 'text-primary border-b-2 border-primary font-medium' : 'text-gray-500'}`}>FAQ</button>
       </div>
 
@@ -172,40 +172,6 @@ const HelpCenter = () => {
           )}
 
           {/* Create Ticket Modal */}
-          {showCreate && (
-            <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center pt-10 sm:pt-20 p-4" onClick={() => setShowCreate(false)}>
-              <div className="bg-white rounded-xl w-full max-w-lg p-5 sm:p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                <h3 className="text-base font-bold mb-4">Create Ticket</h3>
-                <form onSubmit={createTicket} className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Category *</label>
-                    <select value={createForm.category} onChange={e => setCreateForm({ ...createForm, category: e.target.value })} className="input-luxe text-sm w-full min-h-[44px]" required>
-                      <option value="">Select category</option>
-                      {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Priority</label>
-                    <select value={createForm.priority} onChange={e => setCreateForm({ ...createForm, priority: e.target.value })} className="input-luxe text-sm w-full min-h-[44px]">
-                      {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Subject *</label>
-                    <input value={createForm.subject} onChange={e => setCreateForm({ ...createForm, subject: e.target.value })} className="input-luxe text-sm w-full min-h-[44px]" placeholder="Brief title" required />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Description *</label>
-                    <textarea value={createForm.description} onChange={e => setCreateForm({ ...createForm, description: e.target.value })} className="input-luxe text-sm w-full h-24 min-h-[44px]" placeholder="Describe your issue in detail" required />
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <button type="submit" disabled={creating} className="btn-primary text-sm px-6 py-2.5 min-h-[44px] flex-1">{creating ? 'Creating...' : 'Submit Ticket'}</button>
-                    <button type="button" onClick={() => setShowCreate(false)} className="text-sm px-4 py-2.5 min-h-[44px] border border-border rounded-lg hover:bg-gray-50">Cancel</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -280,7 +246,6 @@ const HelpCenter = () => {
             { q: 'How do I track my order?', a: 'You can track your order from the Orders page. Click on the order to see real-time tracking updates.' },
             { q: 'How do I use a coupon?', a: 'Enter the coupon code at checkout in the "Apply Coupon" field. The discount will be applied to your order total.' },
             { q: 'When will I get my refund?', a: 'Refunds are processed within 5-7 business days after the returned item is received and inspected.' },
-            { q: 'How can I contact support?', a: 'Create a support ticket above or email us at support@luxefashion.com. We typically respond within 24 hours.' },
           ].map((faq, i) => (
             <details key={i} className="card-luxe p-3 sm:p-4 group">
               <summary className="text-sm font-medium cursor-pointer list-none flex items-center justify-between">
@@ -293,11 +258,39 @@ const HelpCenter = () => {
         </div>
       )}
 
-      {/* ── CREATE TAB ── */}
-      {tab === 'create' && !showCreate && (
-        <div className="text-center py-12">
-          <p className="text-gray-400 text-sm mb-4">Create a support ticket and we will get back to you.</p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary text-sm px-6 py-2.5 min-h-[44px]">Create Ticket</button>
+      {/* Create Ticket Modal (always rendered when open) */}
+      {showCreate && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center pt-10 sm:pt-20 p-4" onClick={() => setShowCreate(false)}>
+          <div className="bg-white rounded-xl w-full max-w-lg p-5 sm:p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-bold mb-4">Create Ticket</h3>
+            <form onSubmit={createTicket} className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Category *</label>
+                <select value={createForm.category} onChange={e => setCreateForm({ ...createForm, category: e.target.value })} className="input-luxe text-sm w-full min-h-[44px]" required>
+                  <option value="">Select category</option>
+                  {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Priority</label>
+                <select value={createForm.priority} onChange={e => setCreateForm({ ...createForm, priority: e.target.value })} className="input-luxe text-sm w-full min-h-[44px]">
+                  {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Subject *</label>
+                <input value={createForm.subject} onChange={e => setCreateForm({ ...createForm, subject: e.target.value })} className="input-luxe text-sm w-full min-h-[44px]" placeholder="Brief title" required />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Description *</label>
+                <textarea value={createForm.description} onChange={e => setCreateForm({ ...createForm, description: e.target.value })} className="input-luxe text-sm w-full h-24 min-h-[44px]" placeholder="Describe your issue in detail" required />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button type="submit" disabled={creating} className="btn-primary text-sm px-6 py-2.5 min-h-[44px] flex-1">{creating ? 'Creating...' : 'Submit Ticket'}</button>
+                <button type="button" onClick={() => setShowCreate(false)} className="text-sm px-4 py-2.5 min-h-[44px] border border-border rounded-lg hover:bg-gray-50">Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

@@ -3,8 +3,10 @@ import { get } from '../../utils/apiMethods';
 import { API } from '../../utils/apiPaths';
 import toast from 'react-hot-toast';
 import { formatDate } from '../../utils/helpers';
+import { useSite } from '../../context/SiteContext';
 
 const Referral = () => {
+  const { siteTitle } = useSite();
   const [code, setCode] = useState('');
   const [analytics, setAnalytics] = useState(null);
   const [referrals, setReferrals] = useState([]);
@@ -56,10 +58,10 @@ const Referral = () => {
   const copyLink = () => copyToClipboard(referralLink);
 
   const shareVia = (platform) => {
-    const text = `Join me on Luxe Fashion! Use my referral code ${code} and get rewards. Sign up here: ${referralLink}`;
+    const text = `Join me on ${siteTitle}! Use my referral code ${code} and get rewards. Sign up here: ${referralLink}`;
     const urls = {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(text)}`,
-      telegram: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join me on Luxe Fashion!')}`,
+      telegram: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(`Join me on ${siteTitle}!`)}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`,
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
     };

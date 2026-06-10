@@ -28,6 +28,7 @@ const AdminReviews = lazy(() => import('../pages/admin/Reviews'));
 const AdminPayments = lazy(() => import('../pages/admin/Payments'));
 const AdminSupportTickets = lazy(() => import('../pages/admin/SupportTickets'));
 const AdminWithdrawals = lazy(() => import('../pages/admin/Withdrawals'));
+const AdminFooterSettings = lazy(() => import('../pages/admin/FooterSettings'));
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -65,6 +66,7 @@ const AdminLayout = () => {
             <Route path="/payments" element={<AdminPayments />} />
             <Route path="/withdrawals" element={<AdminWithdrawals />} />
             <Route path="/support" element={<AdminSupportTickets />} />
+            <Route path="/footer" element={<AdminFooterSettings />} />
           </Routes>
         </Suspense>
       </div>

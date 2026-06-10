@@ -4,6 +4,7 @@
 
 @layer base {
   * { @apply border-border; }
+  html { scrollbar-gutter: stable; }
   body { @apply bg-background text-primary font-sans antialiased overflow-x-hidden; }
   h1, h2, h3, h4 { @apply font-display; }
   ::selection { @apply bg-accent/20; }

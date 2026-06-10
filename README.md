@@ -19,6 +19,8 @@ Multi-vendor eCommerce platform with role-based dashboards, real-time inventory,
 | Charts | Recharts |
 | Animations | Framer Motion |
 | Social Auth | Google OAuth (@react-oauth/google) |
+| Scheduled Jobs | node-cron |
+| Caching | Redis (optional) |
 
 ## Project Structure
 
@@ -29,28 +31,57 @@ Multi-vendor eCommerce platform with role-based dashboards, real-time inventory,
 │   ├── package.json
 │   ├── .env
 │   └── src/
-│       ├── app.js                  # Express + Socket.IO entry
+│       ├── server.js               # Express + HTTP server entry
+│       ├── app.js                  # Express app setup + route mounting
 │       ├── seed.js                 # Database seeder
 │       ├── config/
 │       │   ├── db.js               # Mongoose connection
-│       │   └── cloudinary.js       # Cloudinary config
-│       ├── middleware/
-│       │   ├── auth.js             # JWT protect, authorize, checkPermission
-│       │   ├── errorHandler.js     # Global error handler
-│       │   ├── validate.js         # Validation result handler
-│       │   ├── validators.js       # Validation rule sets
-│       │   └── upload.js           # Multer-Cloudinary storage
-│       ├── models/                 # 27 Mongoose models
-│       ├── routes/                 # 24 route files
-│       ├── controllers/            # 25 controllers
-│       ├── services/
-│       ├── templates/              # Email templates
-│       ├── utils/
-│       │   ├── apiFeatures.js      # Filtering, sorting, pagination
-│       │   ├── emailService.js
-│       │   ├── generateToken.js
-│       │   └── orderNumberGenerator.js
-│       └── validators/
+│       │   ├── cloudinary.js       # Cloudinary config
+│       │   ├── email.js            # Nodemailer transport
+│       │   ├── redis.js            # Redis client (optional)
+│       │   ├── socket.js           # Socket.IO setup
+│       │   └── stripe.js           # Stripe config
+│       ├── modules/                # Feature modules (31)
+│       │   ├── auth/               # authController, authRoutes, validators
+│       │   ├── users/              # User model, controller, routes
+│       │   ├── vendors/            # Vendor model, controller, routes
+│       │   ├── products/           # Product model, controller, routes
+│       │   ├── carts/              # Cart model, controller, routes
+│       │   ├── checkout/           # Checkout controller, routes
+│       │   ├── orders/             # Order model, controller, routes
+│       │   ├── payments/           # Razorpay integration
+│       │   ├── reviews/            # Review model, controller, routes
+│       │   ├── returns/            # Return model, controller, routes
+│       │   ├── coupons/            # Coupon model, controller, routes
+│       │   ├── categories/         # Category + SubCategory models
+│       │   ├── brands/             # Brand model, controller
+│       │   ├── banners/            # Banner model, controller
+│       │   ├── cms/                # CMS model, controller
+│       │   ├── support/            # SupportTicket model, controller
+│       │   ├── notifications/      # Notification model, controller
+│       │   ├── inventory/          # Inventory + transactions
+│       │   ├── warehouses/         # Warehouse model, controller
+│       │   ├── wallets/            # Wallet model, controller
+│       │   ├── withdrawals/        # Withdrawal model, controller
+│       │   ├── settlements/        # Settlement model, controller
+│       │   ├── commission/         # Commission model, controller
+│       │   ├── referrals/          # Referral model, controller
+│       │   ├── admin/              # Admin dashboard controller
+│       │   ├── subadmins/          # Sub-admin + Role models
+│       │   ├── reports/            # Report endpoints
+│       │   ├── analytics/          # Analytics endpoints
+│       │   ├── auditLogs/          # AuditLog model, controller
+│       │   ├── footer/             # Footer settings
+│       │   └── upload/             # File upload controller
+│       ├── shared/
+│       │   ├── middleware/         # auth, errorHandler, upload, validate
+│       │   ├── utils/             # apiFeatures, emailService, generateToken
+│       │   ├── errors/            # Custom error classes
+│       │   └── constants/         # Shared constants
+│       ├── sockets/               # Socket.IO event handlers
+│       ├── events/                # Event bus
+│       ├── jobs/                  # Scheduled jobs (node-cron)
+│       └── docs/                  # Additional documentation
 └── client/
     ├── package.json
     ├── .env
@@ -58,23 +89,24 @@ Multi-vendor eCommerce platform with role-based dashboards, real-time inventory,
     ├── vite.config.js
     ├── tailwind.config.js
     └── src/
-        ├── App.jsx                 # Root: GoogleOAuth + top-level Routes
-        ├── main.jsx                # Entry point
-        ├── store/                  # Redux Toolkit (6 slices)
-        ├── routes/                 # CustomerRoutes, AdminRoutes, VendorRoutes
-        ├── utils/                  # apiPaths, apiMethods, axios, helpers
+        ├── App.jsx                # GoogleOAuth + top-level Routes
+        ├── main.jsx               # Entry point
+        ├── context/               # SiteContext.jsx (site settings)
+        ├── store/                 # Redux Toolkit (6 slices)
+        ├── routes/                # CustomerRoutes, AdminRoutes, VendorRoutes
+        ├── utils/                 # apiPaths, apiMethods, axios, helpers
         ├── components/
-        │   ├── layout/             # Header, Footer, AdminSidebar, VendorSidebar
-        │   ├── routing/            # ProtectedRoute, GuestRoute, Loading, ScrollToTop
-        │   ├── ui/                 # Badge, Button, Input (design system primitives)
-        │   ├── product/            # ProductCard
-        │   ├── review/             # ReviewCard, ReviewForm
-        │   └── order/              # InvoiceModal
+        │   ├── layout/            # Header, Footer, AdminSidebar, VendorSidebar
+        │   ├── routing/           # ProtectedRoute, GuestRoute, Loading, ScrollToTop
+        │   ├── ui/                # Badge, Button, Input (design system)
+        │   ├── product/           # ProductCard
+        │   ├── review/            # ReviewCard, ReviewForm
+        │   └── order/             # InvoiceModal
         └── pages/
-            ├── auth/               # Login, Register, ForgotPassword, VerifyEmail, ResetPassword
-            ├── customer/           # ~20 pages (Home, Cart, Checkout, Orders, etc.)
-            ├── vendor/             # ~22 pages (Dashboard, Products, Orders, etc.)
-            └── admin/              # ~25 pages (Dashboard, Users, Orders, etc.)
+            ├── auth/              # Login, Register, ForgotPassword, VerifyEmail, ResetPassword
+            ├── customer/          # ~20 pages (Home, Cart, Checkout, Orders, etc.)
+            ├── vendor/            # ~22 pages (Dashboard, Products, Orders, etc.)
+            └── admin/             # ~25 pages (Dashboard, Users, Orders, Returns, Support, etc.)
 ```
 
 ## Getting Started
@@ -92,22 +124,35 @@ Multi-vendor eCommerce platform with role-based dashboards, real-time inventory,
 
 **`server/.env`**
 ```env
+# Server
 NODE_ENV=development
 PORT=5000
+
+# MongoDB
 MONGODB_URI=mongodb://localhost:27017/luxe-fashion
+
+# JWT
 JWT_SECRET=your_jwt_secret
 JWT_REFRESH_SECRET=your_refresh_secret
 JWT_EXPIRE=7d
 JWT_REFRESH_EXPIRE=30d
-CLOUDINARY_CLOUD_NAME=your_cloud
-CLOUDINARY_API_KEY=your_key
-CLOUDINARY_API_SECRET=your_secret
+
+# Cloudinary (file uploads)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# SMTP (email)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=your_email
+SMTP_USER=your_email@gmail.com
 SMTP_PASS=your_app_password
-RAZORPAY_KEY_ID=your_key_id
+
+# Razorpay (payments)
+RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
 RAZORPAY_KEY_SECRET=your_key_secret
+
+# URLs
 CLIENT_URL=http://localhost:5173
 ADMIN_URL=http://localhost:5173/admin
 VENDOR_URL=http://localhost:5173/vendor
@@ -115,8 +160,12 @@ VENDOR_URL=http://localhost:5173/vendor
 
 **`client/.env`**
 ```env
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
-VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
+# Google OAuth
+VITE_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Razorpay (must match server RAZORPAY_KEY_ID)
+VITE_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
 ```
 
 ### Installation & Run
@@ -161,8 +210,6 @@ npm run start:server
 | POST `/social-login` | Google OAuth login |
 | GET `/me` | Get current user |
 | PUT `/update-password` | Change password |
-| POST `/enable-2fa` | Enable 2FA |
-| POST `/verify-2fa` | Verify 2FA code |
 
 ### Products — `/api/products`
 | Endpoint | Description |
@@ -370,6 +417,7 @@ npm run start:server
 | `/admin/brands` | Brands |
 | `/admin/banners` | Banners |
 | `/admin/cms` | CMS |
+| `/admin/footer` | Footer settings |
 | `/admin/reviews` | Review moderation |
 | `/admin/reports` | Reports |
 | `/admin/notifications` | Send notifications |
@@ -402,6 +450,7 @@ npm run start:server
 - **Settlements**: Auto-calculate vendor earnings per order item after return window expires
 - **Audit logging**: Every admin action logged with severity, IP, user agent, and changes diff
 - **Sub-admin roles**: Granular permissions across 25 resource categories
+- **Footer settings**: Admin-managed social links and brand info via dedicated CMS
 
 ## Architecture Notes
 

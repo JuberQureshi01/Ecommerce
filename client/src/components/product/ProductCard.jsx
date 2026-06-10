@@ -13,8 +13,12 @@ const ProductCard = ({ product, isWishlisted: initialWishlisted }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
-  const [isWishlisted, setIsWishlisted] = useState(!!initialWishlisted);
+  const wishlistItems = useSelector((state) => state.wishlist?.items || []);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  const isWishlisted = initialWishlisted !== undefined
+    ? !!initialWishlisted
+    : wishlistItems.includes(product?._id);
 
   if (!product) return null;
 
@@ -32,12 +36,10 @@ const ProductCard = ({ product, isWishlisted: initialWishlisted }) => {
     try {
       if (isWishlisted) {
         await del(API.USERS.WISHLIST_ITEM(product._id));
-        setIsWishlisted(false);
         dispatch(removeWishlistItem(product._id));
         toast.success('Removed from wishlist', { duration: 1500 });
       } else {
         await post(API.USERS.WISHLIST_ITEM(product._id), {});
-        setIsWishlisted(true);
         dispatch(addWishlistItem(product._id));
         toast.success('Added to wishlist', { duration: 1500 });
       }

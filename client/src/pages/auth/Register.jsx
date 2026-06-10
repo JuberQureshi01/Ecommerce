@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
+import { useSite } from '../../context/SiteContext';
 import { registerUser } from '../../store/authSlice';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import toast from 'react-hot-toast';
 
 const Register = () => {
+  const { siteTitle } = useSite();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', phone: '' });
   const [errors, setErrors] = useState({});
   const [referralCode, setReferralCode] = useState('');
@@ -65,7 +67,7 @@ const Register = () => {
         <div className="card-luxe p-4 sm:p-6 md:p-8">
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-semibold">Create Account</h1>
-            <p className="text-sm sm:text-base text-gray-500 mt-2">Join Luxe Fashion today</p>
+            <p className="text-sm sm:text-base text-gray-500 mt-2">Join {siteTitle} today</p>
           </div>
 
           {referralCode && (

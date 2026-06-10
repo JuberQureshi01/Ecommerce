@@ -108,6 +108,8 @@ const Cart = () => {
     if (c.applicableOn === 'product') return 'Specific products';
     return '';
   };
+  const isFullyRedeemed = (c) => c.usageLimit > 0 && c.usedCount >= c.usageLimit;
+  const isExpired = (c) => new Date(c.endDate) < new Date();
   const isExpiringSoon = (c) => {
     const diff = new Date(c.endDate) - new Date();
     return diff > 0 && diff < 3 * 24 * 60 * 60 * 1000;
@@ -142,7 +144,7 @@ const Cart = () => {
 
   const itemCoupons = useMemo(() => {
     return items.map(item => {
-      const applicable = allCoupons.filter(c => isCouponApplicableToItem(c, item));
+      const applicable = allCoupons.filter(c => isCouponApplicableToItem(c, item) && !isFullyRedeemed(c) && !isExpired(c));
       return { itemId: item._id, coupons: applicable };
     });
   }, [items, allCoupons]);
@@ -293,15 +295,24 @@ const Cart = () => {
                   {allCoupons.map((c, idx) => {
                     const isApplied = coupon?.code === c.code;
                     const expiring = isExpiringSoon(c);
+                    const redeemed = isFullyRedeemed(c);
+                    const expired = isExpired(c);
+                    const unavailable = redeemed || expired;
                     return (
-                      <div key={c._id} className={`relative border rounded p-2.5 transition-colors ${isApplied ? 'border-green-300 bg-green-50/60' : 'border-gray-200 hover:border-accent/40'}`}>
+                      <div key={c._id} className={`relative border rounded p-2.5 transition-colors ${isApplied ? 'border-green-300 bg-green-50/60' : unavailable ? 'border-gray-100 bg-gray-50/50 opacity-60' : 'border-gray-200 hover:border-accent/40'}`}>
                         {isApplied && (
                           <span className="absolute top-1.5 right-1.5 text-[9px] text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full font-medium">Applied</span>
+                        )}
+                        {redeemed && !isApplied && (
+                          <span className="absolute top-1.5 right-1.5 text-[9px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded-full font-medium">Fully redeemed</span>
+                        )}
+                        {expired && !isApplied && (
+                          <span className="absolute top-1.5 right-1.5 text-[9px] text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-full font-medium">Expired</span>
                         )}
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-bold tracking-wider text-gray-800">{c.code}</span>
+                              <span className={`text-xs font-bold tracking-wider ${unavailable ? 'text-gray-400' : 'text-gray-800'}`}>{c.code}</span>
                               <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-medium ${getCouponBadge(c.type)}`}>
                                 {c.type === 'free_shipping' ? 'FREE SHIPPING' : c.type === 'percentage' ? `${c.value}% OFF` : `₹${c.value} OFF`}
                               </span>
@@ -312,20 +323,23 @@ const Cart = () => {
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-[9px] text-gray-400">
                               {c.minAmount > 0 && <span>Min. ₹{c.minAmount}</span>}
                               {c.maxDiscount && c.type === 'percentage' && <span>Max disc. ₹{c.maxDiscount}</span>}
-                              <span className={expiring ? 'text-rose-500 font-medium' : ''}>{daysLeft(c)}</span>
+                              {/* {c.usageLimit > 0 && <span>{c.usedCount || 0}/{c.usageLimit} used</span>} */}
+                              <span className={expiring && !unavailable ? 'text-rose-500 font-medium' : ''}>{daysLeft(c)}</span>
                               {c.isFirstOrderOnly && <span className="text-amber-600">First order</span>}
                             </div>
                           </div>
                           <button
                             onClick={() => isApplied ? removeCouponFn() : applyCoupon(c.code)}
-                            disabled={applying}
+                            disabled={applying || unavailable}
                             className={`flex-shrink-0 text-[10px] px-2.5 py-1.5 rounded font-medium min-h-[32px] transition-colors ${
                               isApplied
                                 ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
-                                : 'bg-accent text-white hover:bg-accent/90 disabled:opacity-50'
+                                : unavailable
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  : 'bg-accent text-white hover:bg-accent/90 disabled:opacity-50'
                             }`}
                           >
-                            {isApplied ? 'Remove' : applying ? '...' : 'Apply'}
+                            {isApplied ? 'Remove' : applying ? '...' : unavailable ? 'Unavailable' : 'Apply'}
                           </button>
                         </div>
                       </div>

@@ -3,13 +3,13 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const connectDB = require('./config/db');
 
-const User = require('./models/User');
-const Category = require('./models/Category');
-const SubCategory = require('./models/SubCategory');
-const Brand = require('./models/Brand');
-const Commission = require('./models/Commission');
-const CMS = require('./models/CMS');
-const Role = require('./models/Role');
+const User = require('./modules/users/User');
+const Category = require('./modules/categories/Category');
+const SubCategory = require('./modules/categories/SubCategory');
+const Brand = require('./modules/brands/Brand');
+const Commission = require('./modules/commission/Commission');
+const CMS = require('./modules/cms/CMS');
+const Role = require('./modules/subadmins/Role');
 
 const seed = async () => {
   try {

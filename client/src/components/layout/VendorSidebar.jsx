@@ -4,8 +4,10 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { get, post } from '../../utils/apiMethods';
 import { API } from '../../utils/apiPaths';
 import { logout } from '../../store/authSlice';
+import { useSite } from '../../context/SiteContext';
 
 const VendorSidebar = ({ sidebarOpen, onClose }) => {
+  const { siteTitle } = useSite();
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -69,19 +71,17 @@ const VendorSidebar = ({ sidebarOpen, onClose }) => {
     <>
       {sidebarOpen && <div className="fixed inset-0 bg-black/40 z-30 lg:hidden" onClick={onClose} />}
       <aside className={`fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-border flex flex-col transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 10a1 1 0 011-1h.01M15 10a1 1 0 01-1-1h.01M9 14a3 3 0 003 3 3 3 0 003-3" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-sm font-display font-semibold tracking-tight">LUXE</h1>
-              <p className="text-[10px] text-gray-400 -mt-0.5">Vendor Panel</p>
-            </div>
+        <div className="flex items-center gap-2 px-4 py-4 border-b border-border/60">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 10a1 1 0 011-1h.01M15 10a1 1 0 01-1-1h.01M9 14a3 3 0 003 3 3 3 0 003-3" />
+            </svg>
           </div>
-          <button onClick={onClose} className="lg:hidden w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-sm font-display font-semibold tracking-tight truncate">{siteTitle}</h1>
+            <p className="text-[10px] text-gray-400 -mt-0.5 truncate">Vendor Panel</p>
+          </div>
+          <button onClick={onClose} className="lg:hidden w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -94,36 +94,46 @@ const VendorSidebar = ({ sidebarOpen, onClose }) => {
               <div key={group.label}>
                 <button
                   onClick={() => toggleGroup(group.label)}
-                  className={`flex items-center justify-between w-full px-3 py-1.5 text-[11px] uppercase tracking-widest font-semibold rounded-lg transition-colors duration-150 ${hasActive ? 'text-primary/70' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`group flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold tracking-wider rounded-lg transition-all duration-200 ${
+                    hasActive
+                      ? 'text-primary bg-primary/[0.06]'
+                      : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
-                  <span>{group.label}</span>
-                  <svg className={`w-3 h-3 transition-transform duration-200 ${isCollapsed ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <div className="flex-1 text-left uppercase">{group.label}</div>
+                  <div className={`flex items-center justify-center w-5 h-5 rounded-md transition-all duration-200 ${
+                    hasActive ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-gray-200'
+                  }`}>
+                    <svg className={`w-3 h-3 transition-transform duration-300 ${isCollapsed ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </button>
-                <div className={`overflow-hidden transition-all duration-200 ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'}`}>
-                  {group.items.map((link) => (
-                    <NavLink key={link.to} to={link.to} onClick={onClose} className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all duration-150 group relative ${
-                        isActive
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      }`
-                    }>
-                      {({ isActive }) => (
-                        <>
-                          {isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full" />}
-                          <svg className={`w-4 h-4 flex-shrink-0 transition-colors duration-150 ${isActive ? 'text-primary' : 'text-gray-400 group-hover:text-gray-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d={link.icon} />
-                          </svg>
-                          <span className="truncate">{link.label}</span>
-                          {link.label === 'Notifications' && unreadCount > 0 && (
-                            <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight">{unreadCount > 99 ? '99+' : unreadCount}</span>
-                          )}
-                        </>
-                      )}
-                    </NavLink>
-                  ))}
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'}`}>
+                  <div className="ml-2 pl-3 border-l-2 border-gray-100 space-y-0.5 mt-0.5">
+                    {group.items.map((link) => (
+                      <NavLink key={link.to} to={link.to} onClick={onClose} className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all duration-150 group relative ${
+                          isActive
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`
+                      }>
+                        {({ isActive }) => (
+                          <>
+                            {isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full" />}
+                            <svg className={`w-4 h-4 flex-shrink-0 transition-colors duration-150 ${isActive ? 'text-primary' : 'text-gray-400 group-hover:text-gray-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d={link.icon} />
+                            </svg>
+                            <span className="truncate">{link.label}</span>
+                            {link.label === 'Notifications' && unreadCount > 0 && (
+                              <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                            )}
+                          </>
+                        )}
+                      </NavLink>
+                    ))}
+                  </div>
                 </div>
               </div>
             );

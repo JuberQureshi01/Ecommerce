@@ -208,9 +208,9 @@ const Home = () => {
                   Limited Time Offers
                 </h2>
               </div>
-              <Link
+              <Link 
                 to="/flash-sale"
-                className="text-sm font-medium text-red-600 hover:underline whitespace-nowrap flex flex-col-reverse items-center gap-2"
+                className="text-sm font-medium text-red-600 hover:underline whitespace-nowrap flex sm:flex-col-reverse  items-center gap-2"
 
               >
                  {timeLeft.h !== undefined && (

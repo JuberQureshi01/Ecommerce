@@ -17,7 +17,6 @@ const Profile = () => {
   const [showPw, setShowPw] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [twoFa, setTwoFa] = useState({ secret: '', qrUrl: '', step: 'idle', token: '', loading: false });
 
   const update = async (e) => {
     e.preventDefault();
@@ -47,31 +46,6 @@ const Profile = () => {
       setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
     finally { setPwLoading(false); }
-  };
-
-  const enable2FA = async () => {
-    setTwoFa(prev => ({ ...prev, loading: true }));
-    try {
-      const { data } = await post(API.AUTH.ENABLE_2FA);
-      setTwoFa({ secret: data.secret, qrUrl: data.otpauth_url, step: 'verify', token: '', loading: false });
-    } catch (err) { toast.error(err.response?.data?.message || 'Failed to enable 2FA'); setTwoFa(prev => ({ ...prev, loading: false })); }
-  };
-
-  const verify2FA = async () => {
-    setTwoFa(prev => ({ ...prev, loading: true }));
-    try {
-      await post(API.AUTH.VERIFY_2FA, { token: twoFa.token });
-      toast.success('2FA enabled');
-      setTwoFa({ secret: '', qrUrl: '', step: 'done', token: '', loading: false });
-    } catch (err) { toast.error(err.response?.data?.message || 'Invalid token'); setTwoFa(prev => ({ ...prev, loading: false })); }
-  };
-
-  const disable2FA = async () => {
-    try {
-      await post(API.AUTH.DISABLE_2FA);
-      toast.success('2FA disabled');
-      setTwoFa({ secret: '', qrUrl: '', step: 'idle', token: '', loading: false });
-    } catch (err) { toast.error(err.response?.data?.message || 'Failed to disable 2FA'); }
   };
 
   const handleLogout = async () => {
@@ -116,32 +90,6 @@ const Profile = () => {
             </form>
           )}
         </div>
-
-        <div className="pt-6 border-t border-border">
-          <h2 className="text-base sm:text-lg md:text-xl font-medium mb-3 sm:mb-4">Two-Factor Authentication</h2>
-          {twoFa.step === 'idle' && (
-            <Button variant="outline" onClick={enable2FA} loading={twoFa.loading}>Enable 2FA</Button>
-          )}
-          {twoFa.step === 'verify' && (
-            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-              <p className="text-sm text-gray-600">Scan this QR code in your authenticator app or enter the secret manually:</p>
-              {twoFa.qrUrl && <p className="text-xs text-gray-400 break-all font-mono">{twoFa.qrUrl}</p>}
-              <p className="text-xs font-mono bg-white p-2 border break-all">Secret: {twoFa.secret}</p>
-              <Input label="Authenticator Code" value={twoFa.token} onChange={(e) => setTwoFa({ ...twoFa, token: e.target.value })} placeholder="000000" maxLength={6} />
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button onClick={verify2FA} loading={twoFa.loading} size="sm">Verify & Enable</Button>
-                <Button variant="ghost" size="sm" onClick={() => setTwoFa({ secret: '', qrUrl: '', step: 'idle', token: '', loading: false })}>Cancel</Button>
-              </div>
-            </div>
-          )}
-          {twoFa.step === 'done' && (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <span className="text-sm text-green-600">2FA is enabled</span>
-              <Button variant="danger" size="sm" onClick={disable2FA}>Disable 2FA</Button>
-            </div>
-          )}
-        </div>
-
         <div className="pt-6 border-t border-border">
           <Button variant="danger" onClick={handleLogout}>Logout</Button>
         </div>

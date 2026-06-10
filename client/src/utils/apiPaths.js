@@ -10,9 +10,6 @@ const AUTH = {
   SOCIAL_LOGIN: '/auth/social-login',
   GET_ME: '/auth/me',
   UPDATE_PASSWORD: '/auth/update-password',
-  ENABLE_2FA: '/auth/enable-2fa',
-  VERIFY_2FA: '/auth/verify-2fa',
-  DISABLE_2FA: '/auth/disable-2fa',
 };
 
 const USERS = {
@@ -115,6 +112,12 @@ const UPLOAD = {
 
 const CMS = {
   PAGE: (page) => `/cms/${page}`,
+};
+
+const FOOTER = {
+  GET: '/footer',
+  ADMIN_GET: '/admin/footer',
+  ADMIN_UPDATE: '/admin/footer',
 };
 
 const VENDORS = {
@@ -348,6 +351,7 @@ export const API = {
   BANNERS,
   UPLOAD,
   CMS,
+  FOOTER,
   VENDORS,
   SUPPORT,
   ADMIN_SUPPORT,
